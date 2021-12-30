@@ -1,0 +1,545 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        /*body{
+            overflow:hidden;
+        }*/
+        .frame {
+            fill: none;
+            stroke: #000;
+        }
+
+        .axis text {
+            font: 10px sans-serif;
+        }
+
+        .axis line,
+        .axis circle {
+            fill: none;
+            stroke: #ddd;
+            /*stroke-dasharray: 4;*/
+        }
+
+        .axis:last-of-type circle {
+            stroke: steelblue;
+            stroke-dasharray: none;
+        }
+
+        .line {
+            fill: none;
+            stroke: orange;
+            stroke-width: 3px;
+        }
+        #chart{
+            text-align:center;
+            margin-top:50px;
+        }
+        .chart-title{
+            font-family:sans-serif;
+            text-align:center;
+            margin-top:20px;
+            margin-bottom:20px;
+        }
+        .tooltip {
+            font: bold 25px Verdana;
+            /*font-family: simsun;*/
+            font-size: 12px;
+            width: 120px;
+            height: auto;
+            color: #555;
+            position: absolute;
+            text-align: left;
+            border-style: solid;
+            border-width: 2px;
+            background-color: white;
+            opacity: 0.3;
+            border-radius: 5px;
+        }
+        .bar-txt{
+            cursor:pointer;
+        }
+        #intro{
+            color: #555;
+            font-size: 13.5px;
+            font-family:sans-serif;
+            
+            margin-bottom:10px;
+            margin-right:300px;
+            margin-left:300px;
+        }
+    
+    </style>
+</head>
+<body>
+
+    <h2 class="chart-title">Impact of Gun Control Law on Crime Rate in U.S.
+        from 1977 to 1999</h2>
+    
+    <div id="chart"></div>
+        <p id = "intro">        
+            This visualization is a combination of a star plot and a circular barplot.
+        </p>
+                
+        <p id = "intro">
+            You can use the year slider on the bottom to choose the year that you are interested in, 
+            and you can compare the crime rates and population between years by moving your mouse over the year slider.
+        </p>           
+        <p id = "intro" margin-bottom = "100px">
+            Each state is an axis of the star plot. 
+            The color of the state name visualizes whether this state has a shall-carry law on effect. 
+            The star plot visualizes the three crime rates (violent, murder, and robbery) simultaneously. 
+            The circular barplot visualizes the population of each state.
+        </p>
+        <p> </p>
+
+    <script src="https://d3js.org/d3.v5.js"> </script>
+
+    <script>
+        //Define variables
+        var width = 960,
+            height = 600,
+            radius = Math.min(width, height) / 2 - 130; //graph radius
+        var maxAngle = 24;
+        var maxValue = 0;  //data max value-initialization
+        var minValue = 300; //data start value - distance to center
+        var currentYear = "1977";
+        var barMaxValue = 0;        // Maximum value of bar - initialization
+        var barMaxHeight = 80;      // Maximum height of bar
+        var barDefaultColor = "#ccc";      // bar defult color
+        var barHoverColor = "#666666";      // The color of the bar when the mouse hovers
+        var lawColor = "#ff4d4d";
+
+        var lineNameList = ["population", "violent", "murder", "robbery"];
+        var alldata = [];
+        var chartTop = 70;      // Distance from top of image to title
+        var yearBarTop = 30;        // The top distance of the year slider
+
+        var svg = d3.select("#chart")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + (height / 2 - chartTop) + ")");
+
+        var gbar = svg.append("g")
+            .attr("class", "g-bar");
+        var ga = svg.append("g")
+            .attr("class", "a axis");
+
+        var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+        // Define pop-up box
+        var tooltip = d3.select("body")
+            .append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        // Generate the contents of the pop-up prompt box
+        function tooltipContent(list, title) {
+            var tpl = "<div style='margin-top:5px;'><span>"
+            tpl += "{name}: </span>{value}</div>";
+            var html = "<div style='padding-left:20px;padding-right: 20px;padding-bottom:10px;font-size:12px;'>";
+            html += "<h2>" + title + "</h2>"
+            list.forEach(function (dataItem) {
+                name = dataItem.name, value = dataItem.value;
+                html += tpl.replace("{name}", name).replace("{value}", value);
+            });
+            html += "</div>";
+            return html;
+        }
+
+        // Generate the content of the pop-up prompt when the mouse hovers
+        function mouseover(d, i) {
+            var strhtml = tooltipContent([
+                { name: "population", value: d.population },
+                { name: "violent", value: d.violent },
+                { name: "murder", value: d.murder },
+                { name: "robbery", value: d.robbery },
+            ], d.state);
+
+            // Pop up information box
+            tooltip.html(strhtml)
+                .style("width", "auto")
+                .style("height", "auto")
+                .style("left", (event.pageX - 60) + "px")
+                .style("top", (event.pageY + 20) + "px")
+                .style("opacity", 0.8)
+                ;
+            d3.select(".bar-" + i)
+                .style("fill", barHoverColor);
+            d3.select(".line-" + i)
+                .style("stroke", "#666666")
+                .style("stroke-width", 2)
+        }
+
+        //pop-up prompt when the mouse out
+        function mouseout(d, i) {
+            tooltip.html("");
+            tooltip.style("width", 0)
+                .style("height", 0)
+                .style("opacity", 0.0);
+            d3.select(".bar-" + i)
+                .style("fill", barDefaultColor);
+            d3.select(".line-" + i)
+                .style("stroke", "#ccc")
+                .style("stroke-width", 1)
+        }
+
+        //Define update function
+        function update() {
+            var guns_data = alldata.filter(e => e.year === currentYear);
+            var stateObj = {}
+            guns_data.forEach(function (item) {
+                if (stateObj[item.state] === undefined) {
+                    stateObj[item.state] = item.state;
+                }
+                barMaxValue = Math.max(barMaxValue, item.population);
+                //maxValue = Math.max(maxValue, item.violent);
+                //maxValue = Math.max(maxValue, item.murder);
+                //maxValue = Math.max(maxValue, item.robbery);
+            });
+            console.log(guns_data);
+            var stateList = Object.values(stateObj);
+
+            var axisScale = d3.scaleLinear()
+                .domain([0, stateList.length])
+                .range([0, 2 * Math.PI]);
+
+            var r = d3.scaleLinear()
+                .domain([0, maxValue])
+                .range([0, radius]);
+
+            var barScale = d3.scaleLinear()
+                .domain([0, barMaxValue])
+                .range([0, barMaxHeight]);
+
+            //Draw the population bar
+            gbar
+                .selectAll(".bar")
+                .data(guns_data)
+                .join("rect")
+                .attr("class", (d, i) => "bar bar-" + i)
+                .attr("transform", (d, i) => {
+                    return `rotate(${((axisScale(i) - axisScale(0.85) / 2) * 180) / Math.PI}) translate(${
+                        radius + 20
+                        }, 0)`
+                })
+                .attr("index", (d, i) => i)
+                .style("fill", barDefaultColor)
+                .attr("height", 20)
+                .attr("width", (d) => {
+                    return barScale(d.population); // Math.sqrt(Math.sqrt(d[1] - d[0])) * 10
+                })
+                .on("mouseover", mouseover)
+                .on("mouseout", mouseout);
+
+            //Draw the outermost circle - state name
+            svg.selectAll("#out-path")
+                .data([radius])
+                .join("path")
+                .attr("id", "out-path")
+                .attr("style", "stroke:none;fill:none;")
+                .attr("transform","rotate(177.5)")
+                .attr("d", d => {
+                    return `M 0, 0
+                        m -${d}, 0
+                        a ${d},${d} 0 0,1 ${d*2},0
+                        a ${d},${d} 0 0,1 -${d * 2},0`
+                });
+            var txts = ga.selectAll("text")
+                .data(guns_data)
+                .enter()
+                .append("text");
+
+            var txtWidth = radius * 2 * Math.PI / guns_data.length;
+            ga.selectAll("text")
+                .data(guns_data)
+                .attr("class","bar-txt")
+                .attr("x", (d, i) => txtWidth * i)
+                .attr("dy", -5)
+                .on("mouseover", mouseover)
+                .on("mouseout", mouseout)
+                ;
+            txts.append("textPath")
+                .attr("xlink:href", "#out-path");
+            ga.selectAll("textPath")
+                .data(guns_data)
+                .style("fill", d => {
+                    if (d.law === "yes") {
+                        return lawColor;
+                    }
+                    return "black";
+                })
+                .text(d => d.state);
+
+            //Draw the g where the axis is
+            var _g_line = ga.selectAll("g")
+                .data(guns_data)
+                .enter()
+                .append("g")
+                .attr("class", "g-line")
+                .attr("transform", function (d, i) {
+                    return "rotate(" + (axisScale(i) * 180 / Math.PI) + ")";
+                });
+            ga.selectAll(".g-line")
+                .data(guns_data)
+                .attr("transform", function (d, i) {
+                    return "rotate(" + (axisScale(i) * 180 / Math.PI) + ")";
+                });
+
+            //Draw lines for coordinate axes
+            _g_line.append("line")
+                .attr("class", (d, i) => "line2 line-" + i)
+                .attr("index", (d, i) => i)
+                .attr("state", d => d)
+                .attr("x2", radius)
+                .on("mouseover", mouseover)
+                .on("mouseout", mouseout);
+                
+            ga.selectAll("line")
+                .data(guns_data)
+                .attr("index", (d, i) => i)
+                .attr("state", d => d)
+                .attr("x2", radius);
+
+            var line = d3.lineRadial()
+                .angle(function (d) {
+                    return axisScale(d[0]) + Math.PI / 2;
+                })
+                .radius(function (d) {
+                    return r(d[1]);
+                });
+
+            //Generate name list
+            lineNameList.forEach(function (name, i) {
+                if (name === "population") {
+                    return true;
+                }
+                var sublist = [];
+                guns_data.forEach(function (item, n) {
+                    var value = item[name] + (minValue / lineNameList.length * (i + 1));
+                    if (value > maxValue) {
+                        console.log(item);
+                    }
+                    sublist.push([
+                        n,
+                        value,
+                        name
+                    ]);
+                });
+                sublist.push(sublist[0]);
+
+                svg.selectAll(".area-" + i)
+                    .data([sublist])
+                    .join("polygon")
+                    .attr("class", "area-" + i)
+                    .style("stroke-width", "1px")
+                    .style("stroke", color(name))
+                    .attr("points", function (d) {
+                        var str = "";
+                        for (var pti = 0; pti < d.length; pti++) {
+                            var coors = line([d[pti]])
+                                .slice(1)
+                                .slice(0, -1);
+                            str = str + coors + " ";
+                        }
+                        return str;
+                    })
+                    .style("fill", "none")
+                    .on("mouseover", function (d, i) {
+                        d3.select(this)
+                            .style("stroke-width", "2px");
+                    })
+                    .on("mouseout", function () {
+                        d3.select(this)
+                            .style("stroke-width", "1px");
+                    });
+            });
+
+        }
+
+        //Main function
+        d3.csv("Guns.csv").then(function (retdata) {
+            alldata = retdata;
+            var yearObj = {};
+            alldata.forEach(function (item) {
+                item.population = item.population * 1;
+                item.violent = item.violent * 1;
+                item.murder = item.murder * 1;
+                item.robbery = item.robbery * 1;
+                if (yearObj[item.year] === undefined) {
+                    yearObj[item.year] = item.year;
+                }
+				maxValue = Math.max(maxValue, item.violent);
+                maxValue = Math.max(maxValue, item.murder);
+                maxValue = Math.max(maxValue, item.robbery);
+            });
+			maxValue += minValue;
+			
+
+
+            // ------------------- Year slider start --------------------
+            var yearList = Object.values(yearObj);
+            var yearBarColor = "#ccc";
+            var yearBarLeft = 100;           
+            var yearBarHeight = 20;
+            var _g_year_bar = svg.append("g")
+                .attr("transform", "translate(" + (-width / 2 + yearBarLeft) + "," + (height / 2 - 80 + yearBarTop) + ")");
+
+            let scale = d3.scaleBand()
+                .domain(yearList)
+                .range([0, width - yearBarLeft * 2]);
+            var xAxis = d3.axisBottom()
+                .ticks(-yearBarHeight)
+                .scale(scale)
+                .tickSize(0);
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(" + (-width / 2 + yearBarLeft) + "," + ((height / 2 - 80 + yearBarHeight + yearBarTop)) + ")")
+                .call(xAxis)
+                .append("text")
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                ;
+
+            // draw rectangle of year slider 
+            _g_year_bar
+                .selectAll(".year-bar")
+                .data(yearList)
+                .join("rect")
+                .attr("class", (d, i) => "year-bar year-bar-" + i)
+                .style("fill", (d, i) => {
+                    if (d === currentYear) {
+                        d3.select(".year-bar-" + i)
+                            .classed("isseleted", true);
+                        return "red";
+                    }
+                    return yearBarColor;
+                })
+                .style("stroke", "#fff")
+                .style("stroke-width", 1)
+                .attr("x", d => scale(d))
+                .attr("height", yearBarHeight)
+                .attr("width", scale.bandwidth())
+                .style("opacity", 0.5)
+                .attr("year", d => d)
+                .on("mouseover", function (d, i) {
+                    d3.selectAll(".year-bar")
+                        .style("fill", yearBarColor);
+                    d3.select(this)
+                        .style("fill", "red");
+                    currentYear = d;
+                    update();
+                })
+                .on("mouseout", function () {
+                    //if (d3.select(this).classed("isseleted") !== true) {
+                    //    d3.select(this)
+                    //        .style("fill", yearBarColor);
+                    //}
+                    d3.selectAll(".year-bar")
+                        .style("fill", yearBarColor);
+                    d3.select(this)
+                        .style("fill", "red");
+                    //if (d3.select(".isseleted").size() > 0) {
+                    //    currentYear = d3.select(".isseleted").attr("year");
+                    //    update();
+                    //}
+                });
+
+                //.on("click", function (d) {
+                //    d3.selectAll(".year-bar")
+                //        .classed("isseleted", false)
+                //        .style("fill", yearBarColor);
+                //    d3.select(this)
+                //        .classed("isseleted", true)
+                //        .style("fill", barHoverColor);
+                //    currentYear = d;
+                //    update();
+                //});
+            // ------------------- Year slider end --------------------
+
+            update();
+
+            //Draw legends
+            var legend = svg.append("g") 
+        
+            legend.append("rect")
+            .attr("x", 330)
+            .attr("y", -150)
+            .attr("width",50)
+            .attr("height",3)
+            .style("fill", "steelblue")
+            
+            legend.append("text")
+            .attr("x",390)
+            .attr("y",-145)
+            .attr('font-family', 'sans-serif')
+            .attr('font-size', 12)
+            .text("Violent Rate");
+            
+            legend.append("rect")
+            .attr("x", 330)
+            .attr("y", -130)
+            .attr("width",50)
+            .attr("height",3)
+            .style("fill", "green")
+
+            legend.append("text")
+            .attr("x",390)
+            .attr("y",-125)
+            .attr('font-family', 'sans-serif')
+            .attr('font-size', 12)
+            .text("Robbery Rate");
+
+            legend.append("rect")
+            .attr("x", 330)
+            .attr("y", -110)
+            .attr("width",50)
+            .attr("height",3)
+            .style("fill", "orange")
+
+            legend.append("text")
+            .attr("x",390)
+            .attr("y",-105)
+            .attr('font-family', 'sans-serif')
+            .attr('font-size', 12)
+            .text("Murder Rate");
+        
+            legend.append("rect")
+            .attr("x", 330)
+            .attr("y", -90)
+            .attr("width",50)
+            .attr("height",12)
+            .style("fill", "darkgrey")
+            
+            legend.append("text")
+            .attr("x",390)
+            .attr("y",-80)
+            .attr('font-size', 12)
+            .attr('font-family', 'sans-serif')
+            .text("Population");
+
+            legend.append("text")
+            .attr("x",-410)
+            .attr("y",-150)
+            .attr('font-size', 12)
+            .attr('font-family', 'sans-serif')
+            .style("fill","#ff4d4d")
+            .text("State with Law");
+
+            legend.append("text")
+            .attr("x",-410)
+            .attr("y",-130)
+            .attr('font-size', 12)
+            .attr('font-family', 'sans-serif')
+            .style("fill","black")
+            .text("State without Law");
+
+        });
+    </script>
+</body>
+</html>
