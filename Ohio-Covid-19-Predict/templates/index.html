@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Viz-Framework</title>
+
+    <!-- Bootstrap core CSS -->
+
+    <!-- Custom styles -->
+    <link href="static/stylesheets/style.css" rel="stylesheet">
+
+    <!--  libs -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+</head>
+
+
+<body>
+    <div class="main-box">
+
+        <div class="view-1">
+            <div class="stripe ui-toolbar">
+                <label class="toolbar-title">Map of Columbus</label>
+            </div>
+            <div id="chart-1" style="width: 400px; height: 375px;">
+
+            </div>
+        </div>
+
+        <div class="view-2">
+            <div class="stripe ui-toolbar">
+                <label class="toolbar-title">Hosptial Capacity in Ohio</label>
+                
+            </div>
+            <div id="chart-2" style="width: 590px; height: 375px;">
+
+            </div>
+        </div>
+
+        <div class="view-3">
+            <div class="stripe ui-toolbar">
+                <label class="toolbar-title">Daily Cases Prediction</label>
+                <label class="toolbar-title" id="county-name"></label>
+            </div>
+            <div id="chart-3" style="width: 997px; height: 265px;">
+
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+    <script src="static/javascripts/model.js"></script>
+    <script src="static/javascripts/app.js"></script>
+
+
+
+</body>
+
+</html>
