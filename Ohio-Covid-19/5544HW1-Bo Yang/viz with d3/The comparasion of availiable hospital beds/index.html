@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<style>
+
+  #chart-area svg {
+    margin:auto;
+    display:inherit;
+  }
+  text {
+    font: 10px sans-serif;
+  }
+  form {
+    position: absolute;
+    right: 10px;
+    top: 60px;
+  }
+
+</style>
+<html>
+  <head>
+    <title>The comparasion of availiable hospital beds</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js"></script>
+  </head>
+  <body>
+    <h1>The comparasion of availiable hospital beds</h1>
+    <h2><h2>
+    <div id="chart-area">
+        <form>
+            <label><input type="radio" name="dataset" value="Critical Bed" checked> Critical Bed</label>
+            <label><input type="radio" name="dataset" value="Med/Surg Bed"> Med/Surg Bed</label>
+        </form>        
+    </div>
+    <script src="bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+Area,Number,Type
+Allen,33,Critical Number in Use
+Cuyahoga,636,Critical Number in Use
+Franklin,490,Critical Number in Use
+Hamilton,291,Critical Number in Use
+Lorain,41,Critical Number in Use
+Lucas,191,Critical Number in Use
+Montgomery,214,Critical Number in Use
+Stark,89,Critical Number in Use
+Summit,146,Critical Number in Use
+Allen,39,Critical Total Capacity
+Cuyahoga,840,Critical Total Capacity
+Franklin,578,Critical Total Capacity
+Hamilton,374,Critical Total Capacity
+Lorain,79,Critical Total Capacity
+Lucas,323,Critical Total Capacity
+Montgomery,266,Critical Total Capacity
+Stark,124,Critical Total Capacity
+Summit,165,Critical Total Capacity
+Allen,269,Med/Surg Number in Use
+Cuyahoga,2851,Med/Surg Number in Use
+Franklin,2665,Med/Surg Number in Use
+Hamilton,1450,Med/Surg Number in Use
+Lorain,289,Med/Surg Number in Use
+Lucas,895,Med/Surg Number in Use
+Montgomery,1114,Med/Surg Number in Use
+Stark,531,Med/Surg Number in Use
+Summit,749,Med/Surg Number in Use
+Allen,300,Med/Surg Total Number
+Cuyahoga,3590,Med/Surg Total Number
+Franklin,3121,Med/Surg Total Number
+Hamilton,1678,Med/Surg Total Number
+Lorain,490,Med/Surg Total Number
+Lucas,1251,Med/Surg Total Number
+Montgomery,1432,Med/Surg Total Number
+Stark,572,Med/Surg Total Number
+Summit,875,Med/Surg Total Number

@@ -1,0 +1,16 @@
+{
+	"Critical Bed": [
+		{ "region": "Franklin", "count": "188"},
+		{ "region": "Hamilton", "count": "183"},
+		{ "region": "Lucas", "count": "132"},
+		{ "region": "Cuyahoga", "count": "201"},
+		{ "region": "Montgomery", "count": "52"}
+	],
+	"Med/Surg Bed": [
+		{ "region": "Franklin", "count": "466"},
+		{ "region": "Hamilton", "count": "228"},
+		{ "region": "Lucas", "count": "356"},
+		{ "region": "Cuyahoga", "count": "739"},
+		{ "region": "Montgomery", "count": "318"}
+	]
+}
