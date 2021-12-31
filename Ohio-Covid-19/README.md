@@ -32,7 +32,3 @@ The analysts were able to directly see R(t) changes each day in 2021. And we can
 <img width="535" alt="截屏2021-12-21 下午1 10 19" src="https://user-images.githubusercontent.com/36163586/146978168-7c871760-6264-4b75-86ae-329f92e7527f.png">
 <img width="546" alt="截屏2021-12-21 下午1 10 34" src="https://user-images.githubusercontent.com/36163586/146978202-1c8952a5-d6b6-49ca-8f8f-9e0a8b1a95bd.png">
 <img width="650" alt="截屏2021-12-21 下午1 11 06" src="https://user-images.githubusercontent.com/36163586/146978266-84faeed8-d8b5-4358-b98b-f1e0b4d2042a.png">
-
-# 5544 project:predict Ohio covid-19
-
-<img width="1052" alt="截屏2021-12-21 下午1 13 16" src="https://user-images.githubusercontent.com/36163586/146978635-1815f050-c4bb-450c-a131-befe97e364df.png">
